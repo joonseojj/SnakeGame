@@ -1,51 +1,69 @@
-#define START_X 8
-#define START_Y 8
-
 #include <curses.h>
-#include "./map.cpp"
-#include "./Snake.cpp"
+#include <chrono> 
+#include "map.cpp"
+//#include "Snake2.cpp"
+#include "Snake.cpp"
+#include "Item.cpp"
+
+void printBlockAt(int x, int y, int colorPair) {
+	move(x, y);
+	attron(COLOR_PAIR(colorPair));
+	addch(ACS_BLOCK);
+	addch(ACS_BLOCK);
+	attron(COLOR_PAIR(colorPair));
+}
+
+
+
 
 int main() {
+	std::srand(static_cast<unsigned int>(std::time(nullptr))); 
 	initscr();
+
 	start_color();
 	init_pair(1, COLOR_BLUE, COLOR_BLUE);
 	init_pair(2, COLOR_WHITE, COLOR_WHITE);
 	init_pair(3, COLOR_YELLOW, COLOR_BLACK);
 	init_pair(4, COLOR_BLACK, COLOR_WHITE);
 	init_pair(5, COLOR_YELLOW, COLOR_YELLOW);
-	MAP snakeMap;
-	snakeMap.draw_map();
-	snakeMap.draw_title();
-
-
-	Snake snake(3, RIGHT, MAP_SIZE / 2, MAP_SIZE / 2, 3, 10);
+	MAP map;
+	map.draw_map();
+	Snake snake(3, RIGHT, MAP_SIZE / 2, MAP_SIZE / 2);
+	//GrothItem grothItems[3]; //아이템 객체 생성 
+	//PoisonItem poisonItems[3];
+	keypad(stdscr, true);
+	noecho();
 
 	while (true) {
-		for (int i = 0; ; ++i) {
-			if (snake.getPositionOf(i)[0] == -1 ||
-				snake.getPositionOf(i)[1] == -1)
+		map.draw_map();
+
+		// Snake Visualization
+		for (int index = 0; ; ++index) {
+			if (snake.getPositionOf(index)[0] == -1 ||
+				snake.getPositionOf(index)[1] == -1)
 				break;
 
-			move(START_X + snake.getPositionOf(i)[0],
-				START_Y + snake.getPositionOf(i)[1]);
-			attron(COLOR_PAIR(5));
-			addch(ACS_BLOCK);
-			addch(ACS_BLOCK);
-			attron(COLOR_PAIR(5));
+			printBlockAt(START_X + snake.getPositionOf(index)[0],
+				START_Y + snake.getPositionOf(index)[1],
+				5);
 		}
 		refresh();
 
+		// Snake Update
 		int keyboardInput = getch();
-		switch (keyboardInput)
-		{
-		case KEY_UP:    snake.setDirectionTo(UP);    break;
-		case KEY_DOWN:  snake.setDirectionTo(DOWN);  break;
-		case KEY_RIGHT: snake.setDirectionTo(RIGHT); break;
-		case KEY_LEFT:  snake.setDirectionTo(LEFT);  break;
+		switch (keyboardInput) {
+		case KEY_UP:    snake.setDirectionTo(LEFT);  break;
+		case KEY_DOWN:  snake.setDirectionTo(RIGHT); break;
+		case KEY_RIGHT: snake.setDirectionTo(UP);	 break;
+		case KEY_LEFT:  snake.setDirectionTo(DOWN);  break;
 		}
 		snake.move();
-	}
 
+		//checkItemTime(grothItems, poisonItems); // 매번 각 아이템의 리스폰 시간이 5초 지났는지 확인 
+		//checkItemCollision(grothItems, poisonItems);//매번 각 아이템이 스네이크와 충돌하는지 확인 
+		//std::this_thread::sleep_for(std::chrono::milliseconds(500)); //0.5초 대기 
+		std::cout << "\n";
+	}
 
 	endwin();
 	return 0;
