@@ -1,25 +1,26 @@
+#include <ctime>
 #include <cstdlib>
-#include <ctime> //난수 생성용 
-#include <iostream>
-#include <thread>
-#include <chrono> // 시간 계산용 
+#include <ctime>
+#include <chrono>
 #include <curses.h>
-
-int MAP_SIZE = 20;
+#include "map.cpp"
 
 class Item {
 public:
-    int x=0;
-    int y=0;
-    bool active = false;
+    int x;
+    int y;
+    bool active;
     std::chrono::steady_clock::time_point lastTime;
 
-    Item() :x(0),y(0),active(false) { }
-    //Item(int _x, int _y) : x(_x), y(_y), active(true) {}
+    Item() {
+        x = 0;
+        y = 0;
+        active = false;
+    }  
 
     void respawn() {
-        int new_x = 9 + std::rand() % MAP_SIZE;
-        int new_y = 9 + std::rand() % MAP_SIZE;
+        int new_x = std::rand() % MAP_SIZE;
+        int new_y = std::rand() % MAP_SIZE;
         x = new_x;
         y = new_y;
         active = true;
@@ -32,48 +33,49 @@ public:
     }
 };
 
-class GrothItem : public Item {
+class GrowthItem : public Item {
 public:
-    GrothItem() {
-        respawn();
-    }
+    GrowthItem() : Item() { }
 };
 
 class PoisonItem : public Item {
 public:
-    PoisonItem() {
-        respawn();
-    }
+    PoisonItem() : Item() { }
 };
 
-void checkItemTime(GrothItem grothItems[], PoisonItem poisonItems[]) { //각 아이템마다 5초가 지나면 이동 
-    std::srand(static_cast<unsigned int>(std::time(nullptr)));
-    for (int i = 0; i < 3; ++i) {
-        if (grothItems[i].active &&
-            (std::chrono::steady_clock::now() - grothItems[i].lastTime) >= std::chrono::seconds(5)) {
-            grothItems[i].respawn();
-        }
 
-        if (poisonItems[i].active &&
-            (std::chrono::steady_clock::now() - poisonItems[i].lastTime) >= std::chrono::seconds(5)) {
-            poisonItems[i].respawn();
-        }
 
-    }
-}
-
-//void checkItemCollision(GrothItem grothItems[], PoisonItem poisonItems[],Snake snake) { //스네이크와 충돌 검사
+//
+//void checkItemTime(GrowthItem growthItems[], PoisonItem poisonItems[]) {
 //    for (int i = 0; i < 3; ++i) {
-//        if (grothItems[i].active &&
-//            (grothItems[i].x == snake.getPositionOf()[0] && grothItems[i].y == snake.getPositionOf()[1]) {
-//            grothItems[i].respawn();
+//        if (growthItems[i].active &&
+//            (std::chrono::steady_clock::now() - growthItems[i].lastTime) >= std::chrono::seconds(5)) {
+//            growthItems[i].respawn();
 //        }
 //
-//        if (grothItems[i].active &&
-//            (grothItems[i].x == snake.getPositionOf()[0] && grothItems[i].y == snake.getPositionOf()[1]) {
+//        if (poisonItems[i].active &&
+//            (std::chrono::steady_clock::now() - poisonItems[i].lastTime) >= std::chrono::seconds(5)) {
 //            poisonItems[i].respawn();
 //        }
 //    }
 //}
-
-
+//
+///*
+//void checkItemCollision(GrowthItem growthItems[], PoisonItem poisonItems[], Snake& snake) {
+//    for (int i = 0; i < 3; ++i) {
+//        if (growthItems[i].active &&
+//            growthItems[i].x == snake.getPositionOf(0)[0] &&
+//            growthItems[i].y == snake.getPositionOf(0)[1]) {
+//            growthItems[i].onCollision();
+//            snake.increaseLength();
+//        }
+//
+//        if (poisonItems[i].active &&
+//            poisonItems[i].x == snake.getPositionOf(0)[0] &&
+//            poisonItems[i].y == snake.getPositionOf(0)[1]) {
+//            poisonItems[i].onCollision();
+//            snake.decreaseLength();
+//        }
+//    }
+//}
+//*/
