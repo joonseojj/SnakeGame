@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <chrono>
+#include <thread>
 #include <curses.h>
 #include "map.cpp"
 
@@ -19,8 +20,8 @@ public:
     }  
 
     void respawn() {
-        int new_x = std::rand() % MAP_SIZE;
-        int new_y = std::rand() % MAP_SIZE;
+        int new_x = 9 + std::rand() % MAP_SIZE;
+        int new_y = 9 + std::rand() % MAP_SIZE;
         x = new_x;
         y = new_y;
         active = true;
