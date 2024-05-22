@@ -1,35 +1,19 @@
-
-#include <cstdlib>
+#include "Constants.h"
+#include <random>
 #include <chrono>
-#include <thread>
-#include <curses.h>
+using namespace std;
 
 class Item {
 public:
     int x;
-    int y;
+    int y; 
     bool active;
-    std::chrono::steady_clock::time_point lastTime;
+    int Item_type;//아이템 종류. 0이면 growth, 1이면 poison
 
     Item() {
         x = 0;
         y = 0;
         active = false;
-    }  
-
-    void onCollision() {
-        active = false;
-        lastTime = std::chrono::steady_clock::now();
+        Item_type = std::rand() % 2;
     }
 };
-
-class GrowthItem : public Item {
-public:
-    GrowthItem() : Item() { }
-};
-
-class PoisonItem : public Item {
-public:
-    PoisonItem() : Item() { }
-};
-
