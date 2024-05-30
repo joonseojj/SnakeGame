@@ -1,118 +1,88 @@
-#define SYS_MIN_LENGTH 1
-#define SYS_MAX_LENGTH 30
+#include "Constants.h"
 
-#define UP    0
-#define DOWN  1
-#define RIGHT 2
-#define LEFT  3
-
-#include <stdexcept>
-#include "map.cpp"
+#include <curses.h>
 
 class Snake {
 private:
-    int minLength;
-    int goalLength;
-
     int length;
     int direction;
-    int position[SYS_MAX_LENGTH][2];
+    int position[MAX_LENGTH][2];
 
     int tailTrace[2];
 
-    void initializeLengthTo(int length_) {
-        if (length_ >= SYS_MIN_LENGTH &&
-            length_ <= SYS_MAX_LENGTH)
-            length = length_;
-        else throw out_of_range("INVALID LENGTH");
+    void setLengthTo(const int length) {
+        if (length >= MIN_LENGTH &&
+            length <= MAX_LENGTH)
+            this->length = length;
     }
 
-    void initializeTailTrace() {
-        tailTrace[0] = tailTrace[1] = -1;
+    void setPositionOf(const int index, const int row, const int column) {
+        position[index][0] = row;
+        position[index][1] = column;
     }
 
 public:
-    Snake(int length, int direction, int x, int y, int minLength, int goalLength) {
-        initializeLengthTo(length);
+    Snake(const int length, const int direction, const int row, const int column) {
+        setLengthTo(length);
         setDirectionTo(direction);
-        for (int i = 0; i < SYS_MAX_LENGTH; ++i)
-            if (i < length)
+        for (int index = 0; index < MAX_LENGTH; ++index)
+            if (index < length)
                 switch (direction) {
-                case UP:    setPositionTo(x, y - i, i); break;
-                case DOWN:  setPositionTo(x, y + i, i); break;
-                case RIGHT: setPositionTo(x - i, y, i); break;
-                case LEFT:  setPositionTo(x + i, y, i); break;
+                case UP:    setPositionOf(index, row + index, column); break;
+                case DOWN:  setPositionOf(index, row - index, column); break;
+                case RIGHT: setPositionOf(index, row, column - index); break;
+                case LEFT:  setPositionOf(index, row, column + index); break;
                 }
-            else setPositionTo(-1, -1, i);
-        setLimitsTo(minLength, goalLength);
-        initializeTailTrace();
+            else setPositionOf(index, -1, -1);
+        tailTrace[0] = tailTrace[1] = -1;
     }
 
     void increaseLength() {
         ++length;
-        if (length <= goalLength) {
-            position[length][0] = tailTrace[0];
-            position[length][1] = tailTrace[1];
-        }
+        position[length - 1][0] = tailTrace[0];
+        position[length - 1][1] = tailTrace[1];
     }
 
     void decreaseLength() {
         --length;
-        if (length >= minLength)
+        if (length >= MIN_LENGTH)
             position[length][0] = position[length][1] = -1;
     }
 
     void move() {
         tailTrace[0] = position[length - 1][0];
         tailTrace[1] = position[length - 1][1];
-
-        for (int i = length - 1; i > 0; --i) {
-            position[i][0] = position[i - 1][0];
-            position[i][1] = position[i - 1][1];
+        for (int index = length - 1; index > 0; --index) {
+            position[index][0] = position[index - 1][0];
+            position[index][1] = position[index - 1][1];
         }
-
         switch (direction) {
-        case UP:    ++position[0][1]; break;
-        case DOWN:  --position[0][1]; break;
-        case RIGHT: ++position[0][0]; break;
-        case LEFT:  --position[0][0]; break;
+        case UP:    --position[0][0]; break;
+        case DOWN:  ++position[0][0]; break;
+        case RIGHT: ++position[0][1]; break;
+        case LEFT:  --position[0][1]; break;
         }
     }
 
-    int getLength() {
+    int const getLength() const {
         return length;
     }
 
-    int getDirection() {
+    int const getDirection() const {
         return direction;
     }
 
-    int* getPositionOf(int index = 0) {
+    int* const getPositionOf(const int index) {
         return position[index];
     }
 
-    void setDirectionTo(int direction_) {
-        if (0 <= direction_ <= 3)
-            direction = direction_;
-        else throw out_of_range("INVALID DIRECTION");
+    void setDirectionTo(const int direction) {
+        if (direction >= 0 &&
+            direction <= 3)
+            this->direction = direction;
     }
 
-    void setPositionTo(int x, int y, int index = 0) {
-        if (0 <= x && x < MAP_SIZE &&
-            0 <= y && y < MAP_SIZE) {
-            position[index][0] = x;
-            position[index][1] = y;
-        }
-        else throw out_of_range("INVALID POSITION");
-    }
-
-    void setLimitsTo(int minLength_, int goalLength_) {
-        if (minLength_ >= SYS_MIN_LENGTH &&
-            minLength_ <= goalLength_ &&
-            goalLength_ <= SYS_MAX_LENGTH) {
-            minLength = minLength_;
-            goalLength = goalLength_;
-        }
-        else throw out_of_range("INVALID LENGTH");
+    void setPositionTo(const int row, const int column) {
+        setPositionOf(0, row, column);
     }
 };
