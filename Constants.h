@@ -11,7 +11,7 @@
 #define MAX_LENGTH 30
 
 // Tick Configurations
-#define TICK 250
+#define TICK 100
 
 // Elements
 #define UP 0
@@ -28,6 +28,6 @@
 #define SNAKE_BODY 4
 #define GROWTH_ITEM 5
 #define POISON_ITEM 6
-#define GATE 7
+#define PSYCH_ITEM 9
 
 #endif
