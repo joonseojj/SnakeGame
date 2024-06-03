@@ -53,7 +53,8 @@ void Item_respawn(Item& item) {
 	} 
 	item.x = new_x;
 	item.y = new_y;
-	item.Item_type = std::rand() % 2;
+	int rn = std::rand() % 10; //마약 아이템은 1/10 확률로 생성됨 
+	item.Item_type = (rn == 2) ? 2 : rn%2;
 	item.active = true;
 }
 
@@ -102,6 +103,7 @@ int main() {
 	init_color(103, 0, 1000, 0);		// green
 	init_color(104, 1000, 1000, 1000);	// white
 	init_color(105, 0, 0, 0);			// black
+	init_color(106, 1000, 550, 725);		// pink
 
 	init_pair(1, 105, 105);
 	init_pair(2, 104, 104);
@@ -112,6 +114,7 @@ int main() {
 	init_pair(7, 98, 98);
 	init_pair(8, 102, 102);
 	init_pair(9, 105, 104);
+	init_pair(10, 106, 106);
 	// 필요하면 컬러페어 수정하거나 추가해주세요!
 	curs_set(0);
 	int itemNum;
@@ -127,11 +130,11 @@ int main() {
 	// 게임 난이도 변수
 	// 추후 플레이어가 메인화면에서 바꿀 수 있도록 할 예정
 	goal = 15;
-	snakeTick = 5;
+	snakeTick = 2;
 	itemTick = 80; 
 	itemNum = 2;
 
-
+	int drug_dur = 0; // 남은 마약 지속시간 
 
 
 	int stdscr_height = getmaxy(stdscr);
@@ -145,6 +148,9 @@ int main() {
 	int title_y = (stdscr_height - (title_height + menu_height + gap)) / 2;
 	int menu_x = (stdscr_width - menu_width) / 2;
 	int menu_y = title_y + title_height + gap;
+	
+	
+	
 
 	WINDOW* title = newwin(title_height, title_width, title_y, title_x);
 	WINDOW* menu = newwin(menu_height, menu_width, menu_y, menu_x);
@@ -370,11 +376,11 @@ int main() {
 					// items[index]와 위치가 겹치면
 					if (snake.getPositionOf(0)[0] == items[index].x &&
 						snake.getPositionOf(0)[1] == items[index].y) {
-						if (items[index].Item_type == 1) //growthItem일 경우 길이 증가
-							snake.increaseLength();
-						else //poisonItem일 경우 길이 감소
-							snake.decreaseLength();
-
+						switch (items[index].Item_type) {
+							case 0: snake.decreaseLength(); break;
+							case 1: snake.increaseLength(); break;
+							case 2: drug_dur = 30; break; // 마약 효과 지속시간을 틱 30으로 설정
+						}
 
 						Item_respawn(items[index]);
 						//아이템이 먹힌 경우 리스폰 뿐만 아니라, 아이템을 화면에서 잠시 숨겨야 함.
@@ -437,11 +443,16 @@ int main() {
 
 			// screen에 item 올리기
 			for (int index = 0; index < itemNum; ++index) {
-				if (items[index].active) {
+				if (items[index].active&& drug_dur==0) {
 					screen[items[index].x][items[index].y]
-					= (items[index].Item_type == 1) ? GROWTH_ITEM : POISON_ITEM;
+						= (items[index].Item_type == 0) ? POISON_ITEM : GROWTH_ITEM;
 				}
-				
+				else if (items[index].active && drug_dur > 0) {
+					/*screen[items[index].x][items[index].y]
+						= (items[index].Item_type == 0) ? GROWTH_ITEM : POISON_ITEM;*/
+					screen[items[index].x][items[index].y]
+						= PSYCH_ITEM;
+				}
 			}
 
 			// screen에 gate 올리기
@@ -449,7 +460,6 @@ int main() {
 			for (Gate gate : gates) {
 				// gate의 위치에 해당하는 위치를 screen에서 GATE(7)로 설정
 				screen[gate.x][gate.y] = 7;
-
 			}
 
 			// screen에 snake 올리기
@@ -472,6 +482,7 @@ int main() {
 
 			Sleep(TICK);
 			++tick;
+			if (drug_dur > 0) drug_dur--;
 		}
 
 		// victory가 false인 상태로 반복문 탈출했으면
